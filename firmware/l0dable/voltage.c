@@ -22,11 +22,11 @@ void ram(void) {
 
         lcdNl();
         if(!c){
-            lcdPrintln("CHARGING");
+            lcdPrintln("   CHARGING");
         }else if (mv<3550){
-            lcdPrintln("  Charge NOW!");
+            lcdPrintln(" Charge NOW!");
         }else if (mv<3650){
-            lcdPrintln("  Charge soon");
+            lcdPrintln(" Charge soon");
         }else if (mv<4000){
             lcdPrintln("      OK");
         }else if(mv<4200){
@@ -39,13 +39,14 @@ void ram(void) {
         lcdPrint(" ");
         lcdPrint(IntToStr(v,2,0));
         lcdPrint(".");
-        lcdPrint(IntToStr(mv%1000,3,F_ZEROS));
-        lcdPrintln("V");
+        lcdPrint(IntToStr(mv%1000, 3, F_ZEROS | F_LONG));
+        lcdPrint("V  ~");
 
-        lcdNl();
-        if(c){
-            lcdPrintln("(not charging)");
-        };
+        if (!c)
+            mv -= 500;
+
+        lcdPrint(IntToStr((mv - 3450) * 10 / (4100 - 3450), 1, F_ZEROS));
+        lcdPrintln("0%");
         lcdRefresh();
     } while ((getInputWaitTimeout(242))==BTN_NONE);
 }
