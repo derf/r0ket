@@ -114,6 +114,12 @@ int selectFile(char *filename, char *extension)
 		lcdPrint(pwd);
 		lcdPrintln("]");
 
+		for (int i = 0; i < 98; i++) {
+			lcdSetPixel(i, 9, 1);
+		}
+
+		lcdSetCrsr(0, 12);
+
 		if (!count) {
 			lcdPrintln("- empty");
 		} else {
@@ -130,8 +136,7 @@ int selectFile(char *filename, char *extension)
 		}
 		lcdRefresh();
 
-		char key = getInputWait();
-		getInputWaitRelease();
+		char key = getInputWaitRepeat();
 		switch (key) {
 		case BTN_DOWN:
 			if (selected < count - 1) {
@@ -181,6 +186,7 @@ int selectFile(char *filename, char *extension)
 				} else {
 					strcpy(filename, pwd);
 					strcpy(filename + strlen(pwd), files[selected]);
+					getInputWaitRelease(); /* ?! */
 					return 0;
 				}
 			}

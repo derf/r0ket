@@ -54,17 +54,32 @@ int main(void) {
     lcdDisplay();
     
     switch(getInputRaw()){
-        case BTN_ENTER:
-            lcdPrint("ISP active");
-            lcdRefresh();
-            ReinvokeISP();
-            break;
-        case BTN_DOWN:
-            lcdPrint("MSC active");
-            lcdRefresh();
-            usbMSCInit();
-            while(1);
-            break;
+	case BTN_ENTER:
+		lcdNl();
+		lcdNl();
+		lcdNl();
+		lcdPrintln("   pr0gramm");
+		lcdRefresh();
+
+		ReinvokeISP();
+		break;
+	case BTN_DOWN:
+		while (getInputRaw() != BTN_NONE) {}
+
+		lcdNl();
+		lcdNl();
+		lcdPrintln("     USB");
+		lcdNl();
+		lcdNl();
+		lcdPrintln(" press key to");
+		lcdPrintln(" launch r0ket");
+		lcdRefresh();
+
+		usbMSCInit();
+		while (getInputRaw() == BTN_NONE) {}
+		usbMSCOff();
+		while (getInputRaw() != BTN_NONE) {}
+		break;
     };
 
     fsInit();

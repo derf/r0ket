@@ -58,26 +58,28 @@ void tick_default(void) {
         };
     };
 
-    static char night=0;
-    static char posleds = 0;
-    EVERY(128,2){
-        if( isNight() ){
-            if( GLOBAL(positionleds) ){
-                gpioSetValue (RB_LED0, 1);
-                gpioSetValue (RB_LED2, 1);
-                posleds = 1;
-            }else if( posleds ){
-                gpioSetValue (RB_LED0, 0);
-                gpioSetValue (RB_LED2, 0);
-            }
-        }else{
-            if( posleds ){
-                posleds = 0;
-                gpioSetValue (RB_LED0, 0);
-                gpioSetValue (RB_LED2, 0);
-            }
-        }
+	if (GLOBAL(positionleds)) {
+		int f = isNight();
+		EVERY(2000, 0) {
+			gpioSetValue(RB_LED0, f);
+			gpioSetValue(RB_LED2, f);
+		}
+		EVERY(2000, 10) {
+			gpioSetValue(RB_LED0, 1 - f);
+			gpioSetValue(RB_LED2, 1 - f);
+		}
+		EVERY(2000, 20) {
+			gpioSetValue(RB_LED0, f);
+			gpioSetValue(RB_LED2, f);
+		}
+		EVERY(2000, 30) {
+			gpioSetValue(RB_LED0, 1 - f);
+			gpioSetValue(RB_LED2, 1 - f);
+		}
+	}
 
+    static char night=0;
+    EVERY(128,2){
         if(night!=isNight()){
             night=isNight();
             if(night){

@@ -44,7 +44,7 @@ $(LDFILE):
 	$(CC) $(CFLAGS) -o $@ $<
 
 %.elf: %.o $(FIRMWARE) $(LDFILE)
-	$(LD) $(LDFLAGS) -T $(LDFILE) -o $@ $<
+	$(CC) $(LDFLAGS) -T $(LDFILE) -o $@ $<
 	$(SIZE) $@
 
 %.bin: %.elf

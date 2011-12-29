@@ -90,7 +90,7 @@ uint8_t execute_file (const char * fname){
 /**************************************************************************/
 
 void executeSelect(const char *ext){
-    char filename[15];
+    char filename[30];
     filename[0]='0';
     filename[1]=':';
     filename[2]=0;

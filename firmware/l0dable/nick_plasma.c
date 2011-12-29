@@ -17,7 +17,7 @@
 
 #define INT_MAX 2147483647
 
-#define BLINK
+#undef BLINK
 
 static short sintab[] = {
     0 , 3 , 6 , 9 , 12 , 15 , 18 , 21 , 24 , 28 , 31 , 34 , 37 , 40 , 43 ,
