@@ -10,20 +10,20 @@
 
 #define MAX_BRIGHTNESS 255;
 
+const unsigned char pwm[32] = {0, 2, 3, 4, 6, 8, 11, 16, 23, 32, 45, 64,
+	90, 128, 181, 255,
+181, 128, 90, 64, 45, 32, 16, 11, 8, 6, 4, 3, 2, 0, 0};
+
+const unsigned char pwm_bl[32] = { 0, 1, 1, 2, 3, 4, 5, 8, 11, 16, 22, 32,
+	45, 64, 90, 100,
+	90, 64, 45, 32, 22, 16, 11, 8, 5, 4, 3, 2, 1, 1, 0, 0};
+
 void ram(void)
 {
 	lcdLoadImage("sr.lcd");
 	lcdRefresh();
 
 	char key;
-	const unsigned char pwm[32] = {0, 2, 3, 4, 6, 8, 11, 16, 23, 32, 45, 64,
-		90, 128, 181, 255,
-	181, 128, 90, 64, 45, 32, 16, 11, 8, 6, 4, 3, 2, 0, 0};
-/*
-	const unsigned char pwm_bl[32] = { 0, 1, 1, 2, 3, 4, 5, 8, 11, 16, 22, 32,
-		45, 64, 90, 100,
-		90, 64, 45, 32, 22, 16, 11, 8, 5, 4, 3, 2, 1, 1, 0, 0};
-*/
 	unsigned int i;
 	unsigned int cnt = 0;
 	unsigned char x = 0;
@@ -33,11 +33,11 @@ void ram(void)
 
 	unsigned char led[4];
 	unsigned char f_led[4][32];
-
+/*
 	for (i = 0; i < 32; i++)
 		f_led[0][i] = f_led[1][i] = f_led[2][i] = f_led[3][i] =
 			pwm[i];
-
+*/
 	IOCON_PIO1_11 = 0x00;
 /*	IOCON_SWDIO_PIO1_3 = IOCON_SWDIO_PIO1_3_FUNC_GPIO;
 */	gpioSetDir(RB_LED3, gpioDirection_Output);
@@ -53,9 +53,12 @@ void ram(void)
 				/* set next mode here */
 			}
 			for (i = 0; i < 4; i++) {
-				led[i] = pwm[x];
+				led[0] = pwm[x];
+				led[1] = pwm[x];
+				led[2] = pwm[(x+16) % 32];
+				led[3] = pwm[(x+16) % 32];
 			}
-//			TMR_TMR16B1MR0 = (0XFFFF * (100 - pwm_bl[x])) / 100;
+//			TMR_TMR16B1MR0 = 0xFFFF * (100 - pwm_bl[x]) / 100;
 		}
 
 		step = cnt % MAX_BRIGHTNESS;
