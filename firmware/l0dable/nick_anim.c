@@ -7,5 +7,5 @@
 #include "usetable.h"
 
 void ram(void) {
-    lcdShowAnim("nick.lcd",500);
+    lcdShowAnim("nyan.lcd",120);
 };
