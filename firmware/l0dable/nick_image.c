@@ -8,7 +8,7 @@
 
 #include "usetable.h"
 
-void ledwobble(char mode);
+void ledwobble(signed char mode);
 
 const unsigned char pwm[32] = {
 	0, 2, 3, 4, 6, 8, 11, 16, 23, 32, 45, 64,  90, 128, 181, 255,
@@ -58,7 +58,12 @@ void ram(void)
 			DoString(64, 40, "%");
 			lcdRefresh();
 
-			ledwobble((not_charging && (raw_mv < 4200)));
+			if (not_charging && (raw_mv < 4200))
+				ledwobble(-1);
+			else if (not_charging)
+				ledwobble(0);
+			else
+				ledwobble(1);
 
 			if (not_charging && (raw_mv < 4200)) {
 				t = 0;
@@ -96,7 +101,7 @@ void ram(void)
 	}
 };
 
-void ledwobble(char mode)
+void ledwobble(signed char mode)
 {
 	char key;
 	unsigned char i;
@@ -104,7 +109,7 @@ void ledwobble(char mode)
 	unsigned char x = 0;
 	unsigned char fin = 0;
 	unsigned const int cnt_max = 2560;
-	unsigned const char x_max[2] = {32, 48};
+	unsigned const char x_max[3] = {64, 32, 48};
 	unsigned char step;
 
 	unsigned char led[4] = {0, 0, 0, 0};
@@ -112,7 +117,7 @@ void ledwobble(char mode)
 	for (;;) {
 		if (++cnt >= cnt_max) {
 			cnt = 0;
-			if (++x == x_max[mode]) {
+			if (++x == x_max[mode + 1]) {
 				x = 0;
 				delayms(500);
 
@@ -120,7 +125,7 @@ void ledwobble(char mode)
 				if (key == BTN_ENTER)
 					return;
 
-				if (++fin == 5)
+				if (++fin == 2)
 					return;
 			}
 
@@ -130,9 +135,17 @@ void ledwobble(char mode)
 				if (x > 15)
 					led[1] = led[3] = pwm[x - 16];
 			}
-			else {
+			else if (mode == 0)
 				led[0] = led[1] = led[2] = led[3] = pwm[x];
+			else {
+				if (x < 32)
+					led[0] = led[1] = pwm[x];
+				if (x > 31)
+					led[2] = led[3] = pwm[x % 32];
+				if (x == 32)
+					delayms(500);
 			}
+
 		}
 
 		step = cnt % 256;
