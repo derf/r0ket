@@ -12,41 +12,47 @@
 /**************************************************************************/
 
 void ram(void) {
-    int v,mv,c;
-    do{
-        lcdClear();
-        lcdPrintln("Battery status:");
-        c=gpioGetValue(RB_PWR_CHRG);
-        mv=GetVoltage();
-        v=mv/1000;
+	unsigned int v, mv, raw_mv;
+	char not_charging;
 
-        lcdNl();
-        if(!c){
-            lcdPrintln("   CHARGING");
-        }else if (mv<3550){
-            lcdPrintln(" Charge NOW!");
-        }else if (mv<3650){
-            lcdPrintln(" Charge soon");
-        }else if (mv<4000){
-            lcdPrintln("      OK");
-        }else if(mv<4200){
-            lcdPrintln("     Good");
-        }else{
-            lcdPrintln("     Full");
-        };
+	mv = GetVoltage();
 
-        lcdNl();
-        lcdPrint(" ");
-        lcdPrint(IntToStr(v,2,0));
-        lcdPrint(".");
-        lcdPrint(IntToStr(mv%1000, 3, F_ZEROS | F_LONG));
-        lcdPrint("V  ~");
+	do {
+		lcdClear();
+		lcdPrintln("Battery status:");
 
-        if (!c)
-            mv -= 500;
+		not_charging = gpioGetValue(RB_PWR_CHRG);
+		raw_mv = GetVoltage();
 
-        lcdPrint(IntToStr((mv - 3450) * 10 / (4100 - 3450), 1, F_ZEROS));
-        lcdPrintln("0%");
-        lcdRefresh();
-    } while ((getInputWaitTimeout(242))==BTN_NONE);
+		if (!not_charging)
+			raw_mv -= 500;
+
+		mv = ((mv * 5) + raw_mv) / 6;
+		v = mv/1000;
+
+		lcdNl();
+
+		if (!not_charging)
+			lcdPrintln("   CHARGING");
+		else if (mv < 3550)
+			lcdPrintln(" Charge NOW!");
+		else if (mv < 3650)
+			lcdPrintln(" Charge soon");
+		else if (mv < 4000)
+			lcdPrintln("      OK");
+		else if (mv < 4200)
+			lcdPrintln("     Good");
+		else
+			lcdPrintln("     Full");
+
+		lcdNl();
+		lcdPrint(" ");
+		lcdPrint(IntToStr(v,2,0));
+		lcdPrint(".");
+		lcdPrint(IntToStr(mv % 1000, 3, F_ZEROS | F_LONG));
+		lcdPrint("V  ~");
+		lcdPrint(IntToStr((mv - 3450) * 100 / (4100 - 3450), 2, F_ZEROS | F_LONG));
+		lcdPrintln("%");
+		lcdRefresh();
+	} while (getInputWaitTimeout(242) == BTN_NONE);
 }
