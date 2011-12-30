@@ -83,7 +83,12 @@ void ram(void)
 			__asm volatile ("nop");
 
 		key = getInputRaw();
-		if (key != BTN_NONE)
+		if (key != BTN_NONE) {
+			gpioSetValue(RB_LED0, 0);
+			gpioSetValue(RB_LED1, 0);
+			gpioSetValue(RB_LED2, 0);
+			gpioSetValue(RB_LED3, 0);
 			return;
+		}
 	}
 };
