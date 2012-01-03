@@ -18,6 +18,10 @@ const unsigned char pwm_bl[32] = { 0, 1, 1, 2, 3, 4, 5, 8, 11, 16, 22, 32,
 	45, 64, 90, 100,
 	90, 64, 45, 32, 22, 16, 11, 8, 5, 4, 3, 2, 1, 1, 0, 0};
 
+/*
+ * Designed for a two-pin red/green LED connected to SS0 / SS1
+ */
+
 void ram(void)
 {
 	lcdLoadImage("sr.lcd");
@@ -31,18 +35,21 @@ void ram(void)
 	unsigned const char x_max = 32;
 	unsigned char step;
 
-	unsigned char led[4];
-	unsigned char f_led[4][32];
-/*
-	for (i = 0; i < 32; i++)
-		f_led[0][i] = f_led[1][i] = f_led[2][i] = f_led[3][i] =
-			pwm[i];
-*/
+	unsigned int con_2_4 = IOCON_PIO2_4;
+	unsigned int con_2_5 = IOCON_PIO2_5;
+
+	unsigned char led[5];
 	IOCON_PIO1_11 = 0x00;
-/*	IOCON_SWDIO_PIO1_3 = IOCON_SWDIO_PIO1_3_FUNC_GPIO;
-*/	gpioSetDir(RB_LED3, gpioDirection_Output);
-/*	gpioSetDir(1, 3, gpioDirection_Output);
-*/
+
+	IOCON_SWDIO_PIO1_3 = IOCON_SWDIO_PIO1_3_FUNC_GPIO;
+	IOCON_PIO2_4 = IOCON_PIO2_4_FUNC_GPIO;
+	IOCON_PIO2_5 = IOCON_PIO2_5_FUNC_GPIO;
+
+	gpioSetDir(RB_LED3, gpioDirection_Output);
+	gpioSetDir(RB_SPI_SS0, gpioDirection_Output);
+	gpioSetDir(RB_SPI_SS1, gpioDirection_Output);
+
+	gpioSetDir(RB_HB0, gpioDirection_Output);
 
 	for (;;) {
 
@@ -57,6 +64,7 @@ void ram(void)
 				led[1] = pwm[x];
 				led[2] = pwm[(x+16) % 32];
 				led[3] = pwm[(x+16) % 32];
+				led[4] = (x < 16) ? (x * 17) : (527 - x * 17);
 			}
 //			TMR_TMR16B1MR0 = 0xFFFF * (100 - pwm_bl[x]) / 100;
 		}
@@ -68,6 +76,8 @@ void ram(void)
 			gpioSetValue(RB_LED1, 1);
 			gpioSetValue(RB_LED2, 1);
 			gpioSetValue(RB_LED3, 1);
+			gpioSetValue(RB_SPI_SS0, 1);
+			gpioSetValue(RB_SPI_SS1, 0);
 		}
 
 		if (step == led[0])
@@ -78,6 +88,10 @@ void ram(void)
 			gpioSetValue(RB_LED2, 0);
 		if (step == led[3])
 			gpioSetValue(RB_LED3, 0);
+		if (step == led[4]) {
+			gpioSetValue(RB_SPI_SS0, 0);
+			gpioSetValue(RB_SPI_SS1, 1);
+		}
 
 		for (i = 0; i < 100; i++)
 			__asm volatile ("nop");
@@ -88,6 +102,8 @@ void ram(void)
 			gpioSetValue(RB_LED1, 0);
 			gpioSetValue(RB_LED2, 0);
 			gpioSetValue(RB_LED3, 0);
+			IOCON_PIO2_4 = con_2_4;
+			IOCON_PIO2_5 = con_2_5;
 			return;
 		}
 	}
