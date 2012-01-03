@@ -104,7 +104,7 @@ void ram(void)
 			lcdDisplay();
 		}
 
-		delayms(60);
+		delayms_queue(160);
 
 		if (t%2)
 			gpioSetValue(1,3,1);
@@ -112,6 +112,7 @@ void ram(void)
 			gpioSetValue(1,3,0);
 
 		if ((t % 20) == 0) {
+			gpioSetDir(RB_LED3, gpioDirection_Output);
 			gpioSetValue(RB_LED2, 1);
 			gpioSetValue(RB_LED0, 1);
 		}
@@ -124,6 +125,7 @@ void ram(void)
 		if ((t % 20) == 2) {
 			gpioSetValue(RB_LED1, 0);
 			gpioSetValue(RB_LED3, 0);
+			gpioSetDir(RB_LED3, gpioDirection_Input);
 		}
 		key = getInputRaw();
 		if (key == BTN_ENTER)
@@ -202,8 +204,10 @@ void ledwobble(signed char mode)
 				gpioSetValue(RB_LED1, 1);
 			if (led[2])
 				gpioSetValue(RB_LED2, 1);
-			if (led[3])
+			if (led[3]) {
+				gpioSetDir(RB_LED3, gpioDirection_Output);
 				gpioSetValue(RB_LED3, 1);
+			}
 		}
 
 		if (step == led[0])
@@ -212,8 +216,10 @@ void ledwobble(signed char mode)
 			gpioSetValue(RB_LED1, 0);
 		if (step == led[2])
 			gpioSetValue(RB_LED2, 0);
-		if (step == led[3])
+		if (step == led[3]) {
 			gpioSetValue(RB_LED3, 0);
+			gpioSetDir(RB_LED3, gpioDirection_Input);
+		}
 
 		for (i = 0; i < 100; i++)
 			__asm volatile ("nop");
