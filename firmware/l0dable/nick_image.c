@@ -164,7 +164,7 @@ void ledwobble(signed char mode)
 			cnt = 0;
 			if (++x == x_max[mode + 1]) {
 				x = 0;
-				delayms(500);
+				getInputWaitTimeout(500);
 
 				key = getInputRaw();
 				if (key == BTN_ENTER)
@@ -188,7 +188,7 @@ void ledwobble(signed char mode)
 				if (x > 31)
 					led[2] = led[3] = pwm[x % 32];
 				if (x == 32)
-					delayms(500);
+					getInputWaitTimeout(500);
 			}
 
 		}
