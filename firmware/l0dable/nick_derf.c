@@ -29,13 +29,12 @@ void ram(void)
 	unsigned int percent;
 	int not_charging;
 
-	FIL nyanfile;
+	FIL afile;
 	UINT readbytes;
 
 	lcdLoadImage("sr.lcd");
 	lcdRefresh();
 
-	f_open(&nyanfile, "nyan.lcd", FA_OPEN_EXISTING | FA_READ);
 
 	IOCON_PIO1_11 = 0x00;
 	IOCON_SWDIO_PIO1_3 = IOCON_SWDIO_PIO1_3_FUNC_GPIO;
@@ -45,8 +44,10 @@ void ram(void)
 	for (i = 0; i < 32; i++)
 		mv[i] = GetVoltage();
 
+	f_open(&afile, "nyan.lcd", FA_OPEN_EXISTING | FA_READ);
+
 	for (;;) {
-		if (++t >= 230) {
+		if (++t >= 250) {
 			cur_mv = GetVoltage();
 			not_charging = gpioGetValue(RB_PWR_CHRG);
 
@@ -88,41 +89,57 @@ void ram(void)
 
 			if (not_charging && (mv[mv_idx % 32] < 4200)) {
 				t = 0;
-				img = (img + 1) % 4;
+				img = (img + 1) % 5;
 				next_image(img);
+				if (img == 2) {
+					f_close(&afile);
+					f_open(&afile, "nyan.lcd", FA_OPEN_EXISTING | FA_READ);
+				}
+				else if (img == 4) {
+					f_close(&afile);
+					f_open(&afile, "pinky.lcd", FA_OPEN_EXISTING | FA_READ);
+				}
 			}
 			else
 				t = 232;
 		}
 
 		if ((img == 2) && (t % 2)) {
-			f_read(&nyanfile, (char *)lcdBuffer, RESX * RESY_B, &readbytes);
+			f_read(&afile, (char *)lcdBuffer, RESX * RESY_B, &readbytes);
 			if (readbytes < (RESX * RESY_B)) {
-				f_lseek(&nyanfile, 0);
+				f_lseek(&afile, 0);
+				continue;
+			}
+			lcdDisplay();
+		}
+		if (img == 4) {
+			f_read(&afile, (char *)lcdBuffer, RESX * RESY_B, &readbytes);
+			if (readbytes < (RESX * RESY_B)) {
+				f_lseek(&afile, 0);
 				continue;
 			}
 			lcdDisplay();
 		}
 
-		delayms_queue(160);
+		delayms_queue(100);
 
 		if (t%2)
 			gpioSetValue(1,3,1);
 		else
 			gpioSetValue(1,3,0);
 
-		if ((t % 20) == 0) {
+		if ((t % 40) == 0) {
 			gpioSetDir(RB_LED3, gpioDirection_Output);
 			gpioSetValue(RB_LED2, 1);
 			gpioSetValue(RB_LED0, 1);
 		}
-		if ((t % 20) == 1) {
+		if ((t % 40) == 1) {
 			gpioSetValue(RB_LED2, 0);
 			gpioSetValue(RB_LED0, 0);
 			gpioSetValue(RB_LED1, 1);
 			gpioSetValue(RB_LED3, 1);
 		}
-		if ((t % 20) == 2) {
+		if ((t % 40) == 2) {
 			gpioSetValue(RB_LED1, 0);
 			gpioSetValue(RB_LED3, 0);
 			gpioSetDir(RB_LED3, gpioDirection_Input);
@@ -146,6 +163,8 @@ void next_image(unsigned char img)
 		break;
 	case 3:
 		lcdLoadImage("caek.lcd");
+		break;
+	case 4:
 		break;
 	}
 	lcdRefresh();
