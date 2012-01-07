@@ -88,7 +88,7 @@ void ram(void)
 
 			if (not_charging && (mv[mv_idx % 32] < 4200)) {
 				t = 0;
-				img = (img + 1) % 3;
+				img = (img + 1) % 4;
 				next_image(img);
 			}
 			else
@@ -143,6 +143,9 @@ void next_image(unsigned char img)
 		lcdLoadImage("cccd.lcd");
 		break;
 	case 2:
+		break;
+	case 3:
+		lcdLoadImage("caek.lcd");
 		break;
 	}
 	lcdRefresh();
