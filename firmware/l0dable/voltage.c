@@ -67,7 +67,7 @@ void ram(void) {
 		if (cur_mv > 4200)
 			cur_mv = 4200;
 
-		lcdPrint(IntToStr((cur_mv - 3450) * 100 / (4100 - 3450), 2, F_ZEROS | F_LONG));
+		lcdPrint(IntToStr((cur_mv - 3550) * 100 / (4100 - 3550), 2, F_ZEROS | F_LONG));
 		lcdPrintln("%");
 		lcdRefresh();
 	} while (getInputWaitTimeout(242) == BTN_NONE);

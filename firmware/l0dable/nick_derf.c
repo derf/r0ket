@@ -24,7 +24,7 @@ void ram(void)
 	char key;
 
 	unsigned char mv_idx = 0;
-	unsigned long int cur_mv;
+	unsigned long int cur_mv = GetVoltage();
 	unsigned int mv[32];
 	unsigned int percent;
 	int not_charging;
@@ -61,7 +61,7 @@ void ram(void)
 				cur_mv += mv[i];
 			cur_mv /= 32;
 
-			percent = (cur_mv - 3450) * 100 / (4100 - 3450);
+			percent = (cur_mv - 3550) * 100 / (4100 - 3550);
 			setExtFont(GLOBAL(nickfont));
 			lcdClear();
 			DoString(0,0, GLOBAL(nickname));
@@ -127,6 +127,13 @@ void ram(void)
 			gpioSetValue(1,3,1);
 		else
 			gpioSetValue(1,3,0);
+
+		if (cur_mv < 3600) {
+			if (t % 2)
+				gpioSetValue(RB_LED0, 0);
+			else
+				gpioSetValue(RB_LED0, 1);
+		}
 
 		if ((t % 40) == 0) {
 			gpioSetDir(RB_LED3, gpioDirection_Output);
