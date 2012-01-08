@@ -19,7 +19,7 @@ const unsigned char pwm[32] = {
 void ram(void)
 {
 	unsigned char i;
-	unsigned char t = 0;
+	unsigned int t = 0;
 	unsigned char img = 0;
 	char key;
 
@@ -46,11 +46,12 @@ void ram(void)
 
 	f_open(&afile, "nyan.lcd", FA_OPEN_EXISTING | FA_READ);
 
+
 	for (;;) {
-		if (++t >= 250) {
+
+		if (!(t % 5)) {
 			cur_mv = GetVoltage();
 			not_charging = gpioGetValue(RB_PWR_CHRG);
-
 			if (!not_charging)
 				cur_mv -= 500;
 
@@ -60,6 +61,9 @@ void ram(void)
 			for (i = 0; i < 32; i++)
 				cur_mv += mv[i];
 			cur_mv /= 32;
+		}
+
+		if (++t >= 250) {
 
 			percent = (cur_mv - 3550) * 100 / (4100 - 3550);
 			setExtFont(GLOBAL(nickfont));
@@ -101,7 +105,7 @@ void ram(void)
 				}
 			}
 			else
-				t = 232;
+				t = 255;
 		}
 
 		if ((img == 2) && (t % 2)) {
@@ -128,7 +132,7 @@ void ram(void)
 		else
 			gpioSetValue(1,3,0);
 
-		if (cur_mv < 3600) {
+		if (cur_mv < 3650) {
 			if (t % 2)
 				gpioSetValue(RB_LED0, 0);
 			else
