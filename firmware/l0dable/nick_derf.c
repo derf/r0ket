@@ -138,7 +138,7 @@ void ram(void)
 		else
 			gpioSetValue(1,3,0);
 
-		if (mv[mv_idx % 32] < MV_WARN) {
+		if ((mv[mv_idx % 32] < MV_WARN) && not_charging) {
 			if (t % 2)
 				gpioSetValue(RB_LED0, 0);
 			else
