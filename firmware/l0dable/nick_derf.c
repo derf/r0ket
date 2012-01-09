@@ -12,6 +12,8 @@
 #define MV_MIN 3550
 #define MV_WARN 3650
 
+#define IMG_NO 5
+
 void next_image(unsigned char img);
 void ledwobble(signed char mode);
 
@@ -97,7 +99,7 @@ void ram(void)
 
 			if (not_charging && (mv[mv_idx % 32] < 4200)) {
 				t = 0;
-				img = (img + 1) % 5;
+				img = (img + 1) % IMG_NO;
 				next_image(img);
 				if (img == 2) {
 					f_close(&afile);
@@ -169,6 +171,12 @@ void ram(void)
 			f_close(&afile);
 			return;
 		}
+		else if (key == BTN_LEFT) {
+			t = 250;
+			img = (img + (IMG_NO - 2)) % IMG_NO;
+		}
+		else if (key == BTN_RIGHT)
+			t = 250;
 	}
 };
 
@@ -213,7 +221,7 @@ void ledwobble(signed char mode)
 				getInputWaitTimeout(500);
 
 				key = getInputRaw();
-				if (key == BTN_ENTER)
+				if (key != BTN_NONE)
 					return;
 
 				if (++fin == 2)
