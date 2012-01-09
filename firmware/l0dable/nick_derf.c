@@ -8,6 +8,10 @@
 
 #include "usetable.h"
 
+#define MV_MAX 4100
+#define MV_MIN 3550
+#define MV_WARN 3650
+
 void next_image(unsigned char img);
 void ledwobble(signed char mode);
 
@@ -49,7 +53,7 @@ void ram(void)
 
 	for (;;) {
 
-		if (!(t % 5)) {
+		if (!(t % 10)) {
 			cur_mv = GetVoltage();
 			not_charging = gpioGetValue(RB_PWR_CHRG);
 			if (!not_charging)
@@ -65,7 +69,7 @@ void ram(void)
 
 		if (++t >= 250) {
 
-			percent = (cur_mv - 3550) * 100 / (4100 - 3550);
+			percent = (cur_mv - MV_MIN) * 100 / (MV_MAX - MV_MIN);
 			setExtFont(GLOBAL(nickfont));
 			lcdClear();
 			DoString(0,0, GLOBAL(nickname));
@@ -105,7 +109,7 @@ void ram(void)
 				}
 			}
 			else
-				t = 255;
+				t = 250;
 		}
 
 		if ((img == 2) && (t % 2)) {
@@ -132,7 +136,7 @@ void ram(void)
 		else
 			gpioSetValue(1,3,0);
 
-		if (cur_mv < 3650) {
+		if (cur_mv < MV_WARN) {
 			if (t % 2)
 				gpioSetValue(RB_LED0, 0);
 			else
@@ -156,8 +160,15 @@ void ram(void)
 			gpioSetDir(RB_LED3, gpioDirection_Input);
 		}
 		key = getInputRaw();
-		if (key == BTN_ENTER)
+		if (key == BTN_ENTER) {
+			gpioSetValue(RB_LED0, 0);
+			gpioSetValue(RB_LED1, 0);
+			gpioSetValue(RB_LED2, 0);
+			gpioSetValue(RB_LED3, 0);
+			gpioSetDir(RB_LED3, gpioDirection_Input);
+			f_close(&afile);
 			return;
+		}
 	}
 };
 
