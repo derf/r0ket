@@ -26,6 +26,7 @@ void ram(void)
 {
 	unsigned char i;
 	unsigned int t = 0;
+	unsigned int t_max = 250;
 	unsigned char img = 0;
 	char key;
 
@@ -69,7 +70,7 @@ void ram(void)
 			cur_mv /= 32;
 		}
 
-		if (++t >= 250) {
+		if (++t >= t_max) {
 
 			percent = (cur_mv - MV_MIN) * 100 / (MV_MAX - MV_MIN);
 			setExtFont(GLOBAL(nickfont));
@@ -111,7 +112,7 @@ void ram(void)
 				}
 			}
 			else
-				t = 250;
+				t = t_max;
 		}
 
 		if ((img == 2) && (t % 2)) {
@@ -177,6 +178,10 @@ void ram(void)
 		}
 		else if (key == BTN_RIGHT)
 			t = 250;
+		else if (key == BTN_DOWN)
+			t_max -= (t > 10 ? 10 : 0);
+		else if (key == BTN_UP)
+			t_max += 10;
 	}
 };
 
