@@ -12,7 +12,7 @@
 #define MV_MIN 3550
 #define MV_WARN 3650
 
-#define IMG_NO 5
+#define IMG_NO 6
 
 void next_image(unsigned char img);
 void ledwobble(signed char mode);
@@ -108,7 +108,11 @@ void ram(void)
 				}
 				else if (img == 4) {
 					f_close(&afile);
-					f_open(&afile, "pinky.lcd", FA_OPEN_EXISTING | FA_READ);
+					f_open(&afile, "pinkyj.lcd", FA_OPEN_EXISTING | FA_READ);
+				}
+				else if (img == 5) {
+					f_close(&afile);
+					f_open(&afile, "pinkyl.lcd", FA_OPEN_EXISTING | FA_READ);
 				}
 			}
 			else
@@ -119,15 +123,15 @@ void ram(void)
 			f_read(&afile, (char *)lcdBuffer, RESX * RESY_B, &readbytes);
 			if (readbytes < (RESX * RESY_B)) {
 				f_lseek(&afile, 0);
-				continue;
+				f_read(&afile, (char *)lcdBuffer, RESX * RESY_B, &readbytes);
 			}
 			lcdDisplay();
 		}
-		if (img == 4) {
+		if ((img == 4) || (img == 5)) {
 			f_read(&afile, (char *)lcdBuffer, RESX * RESY_B, &readbytes);
 			if (readbytes < (RESX * RESY_B)) {
 				f_lseek(&afile, 0);
-				continue;
+				f_read(&afile, (char *)lcdBuffer, RESX * RESY_B, &readbytes);
 			}
 			lcdDisplay();
 		}
@@ -200,6 +204,7 @@ void next_image(unsigned char img)
 		lcdLoadImage("caek.lcd");
 		break;
 	case 4:
+	case 5:
 		break;
 	}
 	lcdRefresh();
