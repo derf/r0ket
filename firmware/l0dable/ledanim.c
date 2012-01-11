@@ -11,7 +11,7 @@
 #define MV_WARN 3650
 
 #define MAX_BRIGHTNESS 255;
-#define MAX_ANIM 6
+#define MAX_ANIM 7
 
 const unsigned char pwm[64] = {0, 1, 2, 2, 2, 3, 3, 4, 5, 6, 7, 8, 10, 11,
 	13, 16, 19, 23, 27, 32, 38, 45, 54, 64, 76,
@@ -114,16 +114,16 @@ void ram(void)
 				led[5] = ((x % 2) && ((x >= 30) && (x < 38))) * 255;
 			}
 			else if (anim == 4) {
-				led[0] = ~pwm[x];
-				led[1] = ~pwm[(x + 10) % 64];
-				led[2] = ~pwm[(x + 20) % 64];
-				led[3] = ~pwm[(x + 30) % 64];
-				led[4] = ~pwm[(x + 40) % 64];
-				led[5] = ~pwm[(x + 50) % 64];
+				for (i = 0; i < 6; i++)
+					led[i] = ~pwm[(x + (10 * i)) % 64];
 			}
 			else if (anim == 5) {
 				led[0] = led[1] = led[2] = led[3] = led[4] = led[5]
 					= (x % 2) * MAX_BRIGHTNESS;
+			}
+			else if (anim == 6) {
+				for (i = 0; i < 6; i++)
+					led[i] = (x == i) * MAX_BRIGHTNESS;
 			}
 		}
 
