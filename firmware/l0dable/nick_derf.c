@@ -48,6 +48,20 @@ void ram(void)
 	gpioSetDir(RB_LED3, gpioDirection_Output);
 	gpioSetDir(1, 3, gpioDirection_Output);
 
+	gpioSetDir(RB_SPI_SS0, gpioDirection_Output);
+	gpioSetDir(RB_SPI_SS1, gpioDirection_Output);
+	gpioSetDir(RB_SPI_SS2, gpioDirection_Output);
+	gpioSetDir(RB_SPI_SS3, gpioDirection_Output);
+	gpioSetDir(RB_SPI_SS4, gpioDirection_Output);
+	gpioSetDir(RB_SPI_SS5, gpioDirection_Output);
+
+	gpioSetValue(RB_SPI_SS0, 0);
+	gpioSetValue(RB_SPI_SS1, 0);
+	gpioSetValue(RB_SPI_SS2, 0);
+	gpioSetValue(RB_SPI_SS3, 0);
+	gpioSetValue(RB_SPI_SS4, 0);
+	gpioSetValue(RB_SPI_SS5, 0);
+
 	for (i = 0; i < 32; i++)
 		mv[i] = GetVoltage();
 
@@ -221,7 +235,7 @@ void ledwobble(signed char mode)
 	unsigned const char x_max[3] = {64, 32, 48};
 	unsigned char step;
 
-	unsigned char led[4] = {0, 0, 0, 0};
+	unsigned char led[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 	for (;;) {
 		if (++cnt >= cnt_max) {
