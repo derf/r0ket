@@ -272,6 +272,36 @@ static void move_player(long frame_count) {
 	game.player_x += game.player_x_vel + RESX;
 	game.player_x %= RESX;
 
+	unsigned char xled = (unsigned int)game.player_x * 6 / RESX;
+
+	gpioSetValue(RB_SPI_SS0, 0);
+	gpioSetValue(RB_SPI_SS1, 0);
+	gpioSetValue(RB_SPI_SS2, 0);
+	gpioSetValue(RB_SPI_SS3, 0);
+	gpioSetValue(RB_SPI_SS4, 0);
+	gpioSetValue(RB_SPI_SS5, 0);
+
+	switch (xled) {
+		case 0:
+			gpioSetValue(RB_SPI_SS5, 1);
+			break;
+		case 1:
+			gpioSetValue(RB_SPI_SS4, 1);
+			break;
+		case 2:
+			gpioSetValue(RB_SPI_SS3, 1);
+			break;
+		case 3:
+			gpioSetValue(RB_SPI_SS2, 1);
+			break;
+		case 4:
+			gpioSetValue(RB_SPI_SS1, 1);
+			break;
+		case 5:
+			gpioSetValue(RB_SPI_SS0, 1);
+			break;
+	}
+
 	// move y (jump)
 	// half the speed
 	if(frame_count%2 == 0) {
@@ -324,6 +354,12 @@ static void blink_led() {
 		gpioSetValue(RB_LED1, 1);
 		gpioSetValue(RB_LED2, 1);
 		gpioSetValue(RB_LED3, 1);
+		gpioSetValue(RB_SPI_SS0, 1);
+		gpioSetValue(RB_SPI_SS1, 1);
+		gpioSetValue(RB_SPI_SS2, 1);
+		gpioSetValue(RB_SPI_SS3, 1);
+		gpioSetValue(RB_SPI_SS4, 1);
+		gpioSetValue(RB_SPI_SS5, 1);
 		return;
 	}
 
@@ -339,6 +375,13 @@ static bool gameover_scene() {
 	s1x = (RESX-s1x)/2;
 	int s2x = DoString(0, 0, "HIGHTSCORE!");
 	s2x = (RESX-s2x)/2;
+
+	gpioSetValue(RB_SPI_SS0, 0);
+	gpioSetValue(RB_SPI_SS1, 0);
+	gpioSetValue(RB_SPI_SS2, 0);
+	gpioSetValue(RB_SPI_SS3, 0);
+	gpioSetValue(RB_SPI_SS4, 0);
+	gpioSetValue(RB_SPI_SS5, 0);
 
 	char key = 0;
 	while(key != BTN_UP && key != BTN_DOWN) {
