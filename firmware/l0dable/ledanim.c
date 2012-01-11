@@ -11,7 +11,7 @@
 #define MV_WARN 3650
 
 #define MAX_BRIGHTNESS 255;
-#define MAX_ANIM 2
+#define MAX_ANIM 6
 
 const unsigned char pwm[64] = {0, 1, 2, 2, 2, 3, 3, 4, 5, 6, 7, 8, 10, 11,
 	13, 16, 19, 23, 27, 32, 38, 45, 54, 64, 76,
@@ -73,15 +73,17 @@ void ram(void)
 				else
 					gpioSetValue(RB_LED0, 0);
 
-				lcdClear();
-				lcdPrint("anim ");
-				lcdPrintln(IntToStr(anim, 1, 0));
-				lcdPrint(IntToStr(cur_mv, 4, F_LONG | F_ZEROS));
-				lcdPrintln("mv");
-				lcdDisplay();
-
-				if (++next_anim == 32)
+				if (++next_anim == 16) {
+					next_anim = 0;
 					anim = (anim + 1) % MAX_ANIM;
+
+					lcdClear();
+					lcdPrint("anim ");
+					lcdPrintln(IntToStr(anim, 1, 0));
+					lcdPrint(IntToStr(cur_mv, 4, F_LONG | F_ZEROS));
+					lcdPrintln("mv");
+					lcdDisplay();
+				}
 			}
 			if (anim == 0) {
 				led[0] = pwm[x];
@@ -92,12 +94,36 @@ void ram(void)
 				led[5] = pwm[(x + 50) % 64];
 			}
 			else if (anim == 1) {
+				led[0] = pwm[(x + 50) % 64];
+				led[1] = pwm[(x + 40) % 64];
+				led[2] = pwm[(x + 30) % 64];
+				led[3] = pwm[(x + 20) % 64];
+				led[4] = pwm[(x + 10) % 64];
+				led[5] = pwm[x];
+			}
+			else if (anim == 2) {
+				led[0] = led[1] = led[2] = led[3] = led[4] = led[5]
+					= pwm[x];
+			}
+			else if (anim == 3) {
 				led[0] = ((x % 2) && (x < 6)) * 255;
 				led[1] = ((x % 2) && (((x >=  6) && (x < 12)) || (x >= 56))) * 255;
 				led[2] = ((x % 2) && (((x >= 12) && (x < 18)) || ((x >= 50) && (x < 56)))) * 255;
 				led[3] = ((x % 2) && (((x >= 16) && (x < 24)) || ((x >= 44) && (x < 50)))) * 255;
 				led[4] = ((x % 2) && (((x >= 24) && (x < 30)) || ((x >= 38) && (x < 44)))) * 255;
 				led[5] = ((x % 2) && ((x >= 30) && (x < 38))) * 255;
+			}
+			else if (anim == 4) {
+				led[0] = ~pwm[x];
+				led[1] = ~pwm[(x + 10) % 64];
+				led[2] = ~pwm[(x + 20) % 64];
+				led[3] = ~pwm[(x + 30) % 64];
+				led[4] = ~pwm[(x + 40) % 64];
+				led[5] = ~pwm[(x + 50) % 64];
+			}
+			else if (anim == 5) {
+				led[0] = led[1] = led[2] = led[3] = led[4] = led[5]
+					= (x % 2) * MAX_BRIGHTNESS;
 			}
 		}
 
