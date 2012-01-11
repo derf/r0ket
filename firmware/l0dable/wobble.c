@@ -18,10 +18,6 @@ const unsigned char pwm_bl[32] = { 0, 1, 1, 2, 3, 4, 5, 8, 11, 16, 22, 32,
 	45, 64, 90, 100,
 	90, 64, 45, 32, 22, 16, 11, 8, 5, 4, 3, 2, 1, 1, 0, 0};
 
-/*
- * Designed for a two-pin red/green LED connected to SS0 / SS1
- */
-
 void ram(void)
 {
 	lcdLoadImage("sr.lcd");
@@ -38,7 +34,7 @@ void ram(void)
 	unsigned int con_2_4 = IOCON_PIO2_4;
 	unsigned int con_2_5 = IOCON_PIO2_5;
 
-	unsigned char led[5];
+	unsigned char led[10];
 	IOCON_PIO1_11 = 0x00;
 
 	IOCON_SWDIO_PIO1_3 = IOCON_SWDIO_PIO1_3_FUNC_GPIO;
@@ -48,6 +44,10 @@ void ram(void)
 	gpioSetDir(RB_LED3, gpioDirection_Output);
 	gpioSetDir(RB_SPI_SS0, gpioDirection_Output);
 	gpioSetDir(RB_SPI_SS1, gpioDirection_Output);
+	gpioSetDir(RB_SPI_SS2, gpioDirection_Output);
+	gpioSetDir(RB_SPI_SS3, gpioDirection_Output);
+	gpioSetDir(RB_SPI_SS4, gpioDirection_Output);
+	gpioSetDir(RB_SPI_SS5, gpioDirection_Output);
 
 	gpioSetDir(RB_HB0, gpioDirection_Output);
 
@@ -64,7 +64,12 @@ void ram(void)
 				led[1] = pwm[x];
 				led[2] = pwm[(x+16) % 32];
 				led[3] = pwm[(x+16) % 32];
-				led[4] = (x < 16) ? (x * 17) : (527 - x * 17);
+				led[4] = pwm_bl[x];
+				led[5] = pwm_bl[(x+ 4) % 32];
+				led[6] = pwm_bl[(x+ 8) % 32];
+				led[7] = pwm_bl[(x+12) % 32];
+				led[8] = pwm_bl[(x+16) % 32];
+				led[9] = pwm_bl[(x+20) % 32];
 			}
 //			TMR_TMR16B1MR0 = 0xFFFF * (100 - pwm_bl[x]) / 100;
 		}
@@ -76,8 +81,12 @@ void ram(void)
 			gpioSetValue(RB_LED1, 1);
 			gpioSetValue(RB_LED2, 1);
 			gpioSetValue(RB_LED3, 1);
+			gpioSetValue(RB_SPI_SS3, 1);
+			gpioSetValue(RB_SPI_SS4, 1);
+			gpioSetValue(RB_SPI_SS5, 1);
 			gpioSetValue(RB_SPI_SS0, 1);
-			gpioSetValue(RB_SPI_SS1, 0);
+			gpioSetValue(RB_SPI_SS1, 1);
+			gpioSetValue(RB_SPI_SS2, 1);
 		}
 
 		if (step == led[0])
@@ -88,10 +97,18 @@ void ram(void)
 			gpioSetValue(RB_LED2, 0);
 		if (step == led[3])
 			gpioSetValue(RB_LED3, 0);
-		if (step == led[4]) {
+		if (step == led[4])
+			gpioSetValue(RB_SPI_SS5, 0);
+		if (step == led[5])
+			gpioSetValue(RB_SPI_SS4, 0);
+		if (step == led[6])
+			gpioSetValue(RB_SPI_SS3, 0);
+		if (step == led[7])
+			gpioSetValue(RB_SPI_SS2, 0);
+		if (step == led[8])
+			gpioSetValue(RB_SPI_SS1, 0);
+		if (step == led[9])
 			gpioSetValue(RB_SPI_SS0, 0);
-			gpioSetValue(RB_SPI_SS1, 1);
-		}
 
 		for (i = 0; i < 100; i++)
 			__asm volatile ("nop");
@@ -102,6 +119,12 @@ void ram(void)
 			gpioSetValue(RB_LED1, 0);
 			gpioSetValue(RB_LED2, 0);
 			gpioSetValue(RB_LED3, 0);
+			gpioSetValue(RB_SPI_SS0, 0);
+			gpioSetValue(RB_SPI_SS1, 0);
+			gpioSetValue(RB_SPI_SS2, 0);
+			gpioSetValue(RB_SPI_SS3, 0);
+			gpioSetValue(RB_SPI_SS4, 0);
+			gpioSetValue(RB_SPI_SS5, 0);
 			IOCON_PIO2_4 = con_2_4;
 			IOCON_PIO2_5 = con_2_5;
 			return;
