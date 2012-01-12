@@ -8,7 +8,7 @@
 
 #include "usetable.h"
 
-#define MV_WARN 3650
+#define MV_WARN 3600
 
 #define MAX_BRIGHTNESS 255;
 #define MAX_ANIM 7
