@@ -34,7 +34,7 @@ void ram(void)
 	unsigned long int cur_mv = GetVoltage();
 	unsigned int mv[32];
 	unsigned int percent;
-	int not_charging;
+	int not_charging = gpioGetValue(RB_PWR_CHRG);
 
 	FIL afile;
 	UINT readbytes;
@@ -105,11 +105,9 @@ void ram(void)
 			DoString(64, 40, "%");
 			lcdRefresh();
 
-			if (not_charging && (mv[mv_idx % 32] < 4200))
-				ledwobble(-1);
-			else if (not_charging)
+			if (not_charging && (mv[mv_idx % 32] > 4200))
 				ledwobble(0);
-			else
+			else if (!not_charging)
 				ledwobble(1);
 
 			if (not_charging && (mv[mv_idx % 32] < 4200)) {
