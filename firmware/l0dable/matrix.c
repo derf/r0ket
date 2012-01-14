@@ -10,8 +10,8 @@
 
 #define MV_WARN 3600
 
-#define MAX_BRIGHTNESS 255;
-#define MAX_ANIM 1
+#define MAX_BRIGHTNESS 255
+#define MAX_ANIM 2
 
 const unsigned char pwm[64] = {0, 1, 2, 2, 2, 3, 3, 4, 5, 6, 7, 8, 10, 11,
 	13, 16, 19, 23, 27, 32, 38, 45, 54, 64, 76,
@@ -26,7 +26,7 @@ void ram(void)
 	unsigned int i;
 	unsigned int cnt = 0;
 	unsigned char x = 0;
-	unsigned const int cnt_max = 2560;
+	unsigned const int cnt_max = 1024;
 	unsigned const char x_max = 255;
 	unsigned char step;
 	unsigned char anim = 0;
@@ -106,6 +106,17 @@ void ram(void)
 				led[1][1] = ((x >= 104) && (x < 168)) ? pwm[x - 104] : (
 				            ((x >= 182) && (x < 246)) ? pwm[x - 182] : 0);
 			}
+			if (anim == 1) {
+				led[0][0] = pwm[(x     ) % 64];
+				led[0][1] = pwm[(x +  8) % 64];
+				led[0][2] = pwm[(x + 16) % 64];
+				led[1][2] = pwm[(x + 24) % 64];
+				led[2][2] = pwm[(x + 32) % 64];
+				led[2][1] = pwm[(x + 40) % 64];
+				led[2][0] = pwm[(x + 48) % 64];
+				led[1][0] = pwm[(x + 56) % 64];
+				led[1][1] = MAX_BRIGHTNESS / 3;
+			}
 		}
 
 		step = cnt % MAX_BRIGHTNESS;
@@ -132,7 +143,15 @@ void ram(void)
 		gpioSetValue(RB_SPI_SS2, 1);
 
 		key = getInputRaw();
-		if (key != BTN_NONE) {
+		if (key == BTN_RIGHT) {
+			anim = (anim + 1) % MAX_ANIM;
+			delayms_queue(100);
+		}
+		else if (key == BTN_LEFT) {
+			anim = (anim + MAX_ANIM + 1) % MAX_ANIM;
+			delayms_queue(100);
+		}
+		else if (key == BTN_ENTER) {
 			gpioSetValue(RB_LED0, 0);
 			gpioSetValue(RB_SPI_SS0, 0);
 			gpioSetValue(RB_SPI_SS1, 0);
