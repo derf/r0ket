@@ -31,7 +31,7 @@ CRYPTFLAGS=-p
 skey=`cd .. && ./getkey.pl l0dable_sign`
 ekey=`cd .. && ./getkey.pl l0dable_crypt`
 
-all: $(OBJS) $(ELFS) $(BINS) $(CODS) $(NIKS) 1boot.int debug.int config.int initanim.int
+all: $(OBJS) $(ELFS) $(BINS) $(CODS) $(NIKS) 1boot.int debug.int config.int initanim.int dbgmesh.int
 
 $(LDFILE):
 	-@echo "MEMORY" > $(LDFILE)
@@ -43,8 +43,8 @@ $(LDFILE):
 %.o : %.c
 	$(CC) $(CFLAGS) -o $@ $<
 
-%.elf: %.o $(FIRMWARE) $(LDFILE)
-	$(CC) $(LDFLAGS) -T $(LDFILE) -o $@ $<
+%.elf: %.o $(FIRMWARE) $(LDFILE) libmemcpy.a
+	$(LD) $(LDFLAGS) -T $(LDFILE) -o $@ $< -L. -lmemcpy
 	$(SIZE) $@
 
 %.bin: %.elf
@@ -68,6 +68,9 @@ endif
 debug.int: debug.c0d .PHONY
 	mv $< $@
 
+dbgmesh.int: dbgmesh.c0d .PHONY
+	mv $< $@
+
 config.int: config.c0d .PHONY
 	mv $< $@
 
@@ -81,6 +84,13 @@ $(OBJS): usetable.h
 
 usetable.h:
 	./mktable.pl
+
+help/memcpy.o: help/memcpy.c
+
+libmemcpy.a: help/memcpy.o
+	$(AR) rcs $@ $<
+	$(RANLIB) $(RANLIBFLAGS) $@
+
 
 .SUFFIXES:
 

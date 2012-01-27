@@ -137,8 +137,6 @@ static void openbeaconSendPacket(uint32_t id, uint32_t seq,
 
 void openbeaconSend(void)
 {
-    //uint8_t status;
-
     nrf_config_get(&oldconfig);
 
     nrf_set_channel(OPENBEACON_CHANNEL);
@@ -153,6 +151,6 @@ void openbeaconSend(void)
         openbeaconSaveBlock();
 #endif
     nrf_config_set(&oldconfig);
-    //return status;
+    nrf_set_strength(3);
 }
 

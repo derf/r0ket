@@ -33,6 +33,10 @@ INCLUDE_PATHS = -I$(ROOT_PATH) -I$(ROOT_PATH)/core
 
 include $(ROOT_PATH)/Makefile.inc
 
+ifdef APP
+OUTFILE=$(APP)
+endif
+
 LDFLAGS+= -Wl,--gc-sections
 OBJS += lpc1xxx/$(TARGET)_handlers.o lpc1xxx/LPC1xxx_startup.o
 
@@ -77,7 +81,7 @@ clean:
 	$(MAKE) $(CONFIG_MAKE_PRINTDIRECTORY) -C l0dable clean
 
 flash: all
-	../tools/bootloader/simpleflash firmware.bin
+	../tools/bootloader/simpleflash $(OUTFILE).bin
 
 ### Internal targets
 

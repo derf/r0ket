@@ -36,21 +36,25 @@ void initMesh(void){
     meshbuffer[0].flags=MF_USED;
 };
 
+#define MP_OK     0
+#define MP_SEND   1
+#define MP_RECV   2
+#define MP_IGNORE 4
 int mesh_sanity(uint8_t * pkt){
     if(MO_TYPE(pkt)>0x7f || MO_TYPE(pkt)<0x20)
-        return 1;
-    if(MO_TYPE(pkt)=='T' && MO_BODY(pkt)[5])
-           return 3;
+        return MP_SEND;
+    if(MO_TYPE(pkt)=='T' && MO_TIME(pkt)<86400)
+           return MP_OK;
     if(MO_TYPE(pkt)>='A' && MO_TYPE(pkt)<='Z'){
-        if(MO_TIME(pkt)>1325379600)
-            return 1;
-        if(MO_TIME(pkt)<1324602000)
-            return 1;
+        if(MO_TIME(pkt)>1370340000) /* 4.Jun 2013 */
+            return MP_SEND;
+        if(MO_TIME(pkt)<1325376000) /* 1.1.2012 */
+            return MP_SEND;
     }else if(MO_TYPE(pkt)>='a' && MO_TYPE(pkt)<='z'){
-        if(MO_TIME(pkt)>16777216)
-            return 1;
+        if(MO_TIME(pkt)>16777216) /* 3-byte only */
+            return MP_SEND;
         if(MO_TIME(pkt)<0)
-            return 1;
+            return MP_SEND;
     };
     if(MO_TYPE(pkt)!='A' && 
        MO_TYPE(pkt)!='a' && 
@@ -60,9 +64,9 @@ int mesh_sanity(uint8_t * pkt){
        MO_TYPE(pkt)!='G' && 
        MO_TYPE(pkt)!='T'
             ){
-        return 2;
+        return MP_IGNORE;
     };
-    return 0;
+    return MP_OK;
 };
 
 MPKT * meshGetMessage(uint8_t type){
@@ -77,7 +81,7 @@ MPKT * meshGetMessage(uint8_t type){
         };
     };
     if(free==-1){ // Buffer full. Ah well. Kill a random packet
-        free=1; // XXX: GetRandom()?
+        free= (int)(getRandom() % MESHBUFSIZE);
         meshbuffer[free].flags=MF_FREE;
     };
     if(meshbuffer[free].flags==MF_FREE){
@@ -89,19 +93,25 @@ MPKT * meshGetMessage(uint8_t type){
     return &meshbuffer[free];
 };
 
-void meshPanic(uint8_t * pkt){
+void meshPanic(uint8_t * pkt,int bufno){
 #if 0
-    setSystemFont();
-    lcdClear();
-    lcdPrint("MESH-PANIC:");
-    lcdNl();
-    for(int i=0;i<32;i++){
-        lcdPrint(IntToStrX(pkt[i],2));
-        if(i%6==5)
-            lcdNl();
-    }
-    lcdRefresh();
-    while ((getInputRaw())==BTN_NONE);
+    static int done=0;
+    if(!done){
+	setSystemFont();
+	lcdClear();
+	lcdPrint("PANIC[");
+	lcdPrint(IntToStrX(bufno,2));
+	lcdPrint("]");
+	lcdNl();
+	for(int i=0;i<32;i++){
+	    lcdPrint(IntToStrX(pkt[i],2));
+	    if(i%6==5)
+		lcdNl();
+	}
+	lcdRefresh();
+	while ((getInputRaw())==BTN_NONE);
+    };
+    done=1;
 #endif
 };
 
@@ -122,12 +132,9 @@ void mesh_cleanup(void){
                 if (MO_TIME(meshbuffer[i].pkt)-now>SECS_DAY)
                     meshbuffer[i].flags=MF_FREE;
             };
-            if(mesh_sanity(meshbuffer[i].pkt)==1){
+            if((mesh_sanity(meshbuffer[i].pkt)&MP_SEND)!=0){
                 meshbuffer[i].flags=MF_FREE;
-            };
-            if(mesh_sanity(meshbuffer[i].pkt)==3){
-                meshbuffer[i].flags=MF_FREE;
-                meshPanic(meshbuffer[i].pkt);
+                meshPanic(meshbuffer[i].pkt,i);
             };
         };
     };
@@ -204,7 +211,7 @@ static inline uint32_t popcount(uint32_t *buf, uint8_t n){
 
 uint8_t mesh_recvqloop_work(void){
     __attribute__ ((aligned (4))) uint8_t buf[32];
-    unsigned int len;
+    signed int len;
 
         len=nrf_rcv_pkt_poll_dec(sizeof(buf),buf,NULL);
 
@@ -215,8 +222,8 @@ uint8_t mesh_recvqloop_work(void){
 
         if(mesh_sanity(buf)){
             meshincctr++;
-            if(mesh_sanity(buf)==3){
-                meshPanic(buf);
+            if((mesh_sanity(buf)&MP_RECV)!=0){
+                meshPanic(buf,-1);
             };
             return 0;
         };
