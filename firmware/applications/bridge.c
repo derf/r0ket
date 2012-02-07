@@ -56,10 +56,9 @@ void dump_encoded(int len, uint8_t *data);
 
 void main_bridge(void)
 {
-    GLOBAL(daytrig)=10;
-    GLOBAL(lcdbacklight)=10;
     GLOBAL(privacy) = 3;
-    char input[64];
+    char input[1024];
+    unsigned int i;
 
     usbCDCInit();
     delayms(500);
@@ -72,37 +71,37 @@ void main_bridge(void)
         CDC_OutBufAvailChar (&l);
         if(l>0){
             CDC_RdOutBuf (input, &l);
-            for(i=0; i<l; i++){
-                uint8_t cmd = serialmsg_put(input[i]);
-                if( cmd != SERIAL_NONE ){
-                    switch( cmd ){
-                        case '1':
-                            // can we loose packets here?
-                            nrf_rcv_pkt_end();
-                            status=snd_pkt_no_crc(serialmsg_len, serialmsg_message);
-                            //status=nrf_snd_pkt_crc(serialmsg_len, serialmsg_message);
-                            nrf_rcv_pkt_start();
-                        break;
-                        case '3':
-                            memcpy(config.txmac, serialmsg_message, 5);
-                            nrf_config_set(&config);
-                        break;
-                        case '4':
-                            memcpy(config.mac0, serialmsg_message, 5);
-                            nrf_config_set(&config);
-                        break;
-                        case '5':
-                            config.channel=serialmsg_message[0];
-                            nrf_config_set(&config);
-                        break;
-                        case '6':
-                            config.maclen[0]=serialmsg_message[0];
-                            nrf_config_set(&config);
-                        break;
-                    };
-                    puts("\\2\\0");
-                }
-            }
+		  if (input[0] == '\r')
+			puts("\r\nderf@r0ket > ");
+		else
+		  puts(input);
+
+		if (input[0] == 'l') {
+			switch (input[1]) {
+				case '0': gpioSetValue(RB_LED0, (input[2] == '1') ? 1 : 0); break;
+				case '1': gpioSetValue(RB_LED1, (input[2] == '1') ? 1 : 0); break;
+				case '2': gpioSetValue(RB_LED2, (input[2] == '1') ? 1 : 0); break;
+			}
+		}
+		else if (input[0] == 'p') {
+			input[l-1] = '\0';
+			for (i = 0; i < l; i += 14)
+				lcdPrintln(input + i + 1);
+			lcdRefresh();
+		}
+		else if (input[0] == 'P') {
+			input[l-1] = '\0';
+			for (i = 0; i < l; i += 14)
+				lcdPrintln(input + i + 1);
+		}
+		else if (input[0] == 'c') {
+			lcdClear();
+			lcdRefresh();
+		}
+		else if (input[0] == 'C') {
+			lcdRefresh();
+			lcdClear();
+		}
         }
         int len;
         uint8_t buf[32];
