@@ -4,22 +4,37 @@ use strict;
 use warnings;
 use 5.010;
 
+use Getopt::Std;
 use IO::Handle;
+use Time::HiRes qw(usleep);
 
 our $VERSION = '0.0';
 
+my %opt;
+getopts('v', \%opt);
 my $infile = shift or die("Usage: ./transf <file.lcd>\n");
+
+sub puts {
+	my ($cmd) = @_;
+
+	if ($opt{v}) {
+		printf("Writing %s\n", unpack('H*', $cmd));
+	}
+
+	open(my $out, '>', '/dev/ttyACM0');
+	$out->blocking(1);
+	$out->write($cmd, 34);
+	close($out);
+}
 
 open(my $in, '<', $infile);
 my $buf;
 my $offs = 0;
 
-while (read($in, $buf, 64)) {
-	printf("Writing at %d: %s\n", $offs, unpack('h*', $buf));
-
-	open(my $out, '>', '/dev/ttyACM0');
-	print $out pack("cCa*", ord("d"), $offs, $buf);
-	close($out);
+while (read($in, $buf, 32)) {
+	puts(pack('cCa*', ord('D'), $offs + 32, $buf));
 	$offs++;
 }
 close($in);
+
+puts('dz');
