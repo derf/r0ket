@@ -31,7 +31,7 @@
 void main_bridge(void)
 {
     GLOBAL(privacy) = 3;
-    char input[1024];
+    char input[128];
     unsigned int i;
 
     usbCDCInit();
@@ -55,6 +55,17 @@ void main_bridge(void)
 				case '1': gpioSetValue(RB_LED1, (input[2] == '1') ? 1 : 0); break;
 				case '2': gpioSetValue(RB_LED2, (input[2] == '1') ? 1 : 0); break;
 			}
+		}
+		else if (input[0] == 'd') {
+			if ((uint8_t)input[1] > 13) {
+				gpioSetValue(RB_LED0, 1);
+				delayms(100);
+				gpioSetValue(RB_LED0, 0);
+				continue;
+			}
+			for (i = 0; (i < 64) && ((input[1] * 64 + i) < (RESX*RESY_B)); i++)
+				lcdBuffer[input[1] * 64 + i] = input[i + 2];
+			lcdRefresh();
 		}
 		else if (input[0] == 'p') {
 			input[l-1] = '\0';
