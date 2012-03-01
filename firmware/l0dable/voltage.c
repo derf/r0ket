@@ -14,13 +14,7 @@
 void ram(void) {
 	unsigned char v;
 	unsigned long int cur_mv;
-	unsigned int mv[32];
-	unsigned char mv_idx = 0;
-	unsigned char i;
 	char not_charging;
-
-	for (i = 0; i < 32; i++)
-		mv[i] = GetVoltage();
 
 	do {
 		lcdClear();
@@ -28,16 +22,6 @@ void ram(void) {
 
 		not_charging = gpioGetValue(RB_PWR_CHRG);
 		cur_mv = GetVoltage();
-
-		if (!not_charging)
-			cur_mv -= 500;
-
-		mv[++mv_idx % 32] = cur_mv;
-		cur_mv = 0;
-
-		for (i = 0; i < 32; i++)
-			cur_mv += mv[i];
-		cur_mv /= 32;
 
 		v = cur_mv/1000;
 
@@ -62,6 +46,9 @@ void ram(void) {
 		lcdPrint(".");
 		lcdPrint(IntToStr(cur_mv % 1000, 3, F_ZEROS | F_LONG));
 		lcdPrint("V  ~");
+
+		if (!not_charging)
+			cur_mv -= 500;
 
 		/* battery full */
 		if (cur_mv > 4200)

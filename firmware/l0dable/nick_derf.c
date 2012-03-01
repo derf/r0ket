@@ -24,15 +24,12 @@ const unsigned char pwm[32] = {
 
 void ram(void)
 {
-	unsigned char i;
 	unsigned int t = 0;
 	unsigned int t_max = 250;
 	unsigned char img = 0;
 	char key;
 
-	unsigned char mv_idx = 0;
-	unsigned long int cur_mv = GetVoltage();
-	unsigned int mv[32];
+	unsigned int cur_mv = GetVoltage();
 	unsigned int percent;
 	int not_charging = gpioGetValue(RB_PWR_CHRG);
 
@@ -62,9 +59,6 @@ void ram(void)
 	gpioSetValue(RB_SPI_SS4, 0);
 	gpioSetValue(RB_SPI_SS5, 0);
 
-	for (i = 0; i < 32; i++)
-		mv[i] = GetVoltage();
-
 	f_open(&afile, "nyan.lcd", FA_OPEN_EXISTING | FA_READ);
 
 
@@ -75,13 +69,6 @@ void ram(void)
 			not_charging = gpioGetValue(RB_PWR_CHRG);
 			if (!not_charging)
 				cur_mv -= 500;
-
-			mv[++mv_idx % 32] = cur_mv;
-			cur_mv = 0;
-
-			for (i = 0; i < 32; i++)
-				cur_mv += mv[i];
-			cur_mv /= 32;
 		}
 
 		if (++t >= t_max) {
@@ -96,7 +83,7 @@ void ram(void)
 
 			if (!not_charging)
 				DoString(0, 40, "+");
-			else if (not_charging && (mv[mv_idx % 32] > 4200)) {
+			else if (not_charging && (cur_mv > 4200)) {
 				DoString(0, 40, "=");
 			}
 
@@ -105,12 +92,12 @@ void ram(void)
 			DoString(64, 40, "%");
 			lcdRefresh();
 
-			if (not_charging && (mv[mv_idx % 32] > 4200))
+			if (not_charging && (cur_mv > 4200))
 				ledwobble(0);
 			else if (!not_charging)
 				ledwobble(1);
 
-			if (not_charging && (mv[mv_idx % 32] < 4200)) {
+			if (not_charging && (cur_mv < 4200)) {
 				t = 0;
 				img = (img + 1) % IMG_NO;
 				next_image(img);
@@ -155,7 +142,7 @@ void ram(void)
 		else
 			gpioSetValue(1,3,0);
 
-		if ((mv[mv_idx % 32] < MV_WARN) && not_charging) {
+		if ((cur_mv < MV_WARN) && not_charging) {
 			if (t % 2)
 				gpioSetValue(RB_LED0, 0);
 			else
