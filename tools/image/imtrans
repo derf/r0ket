@@ -1,0 +1,12 @@
+#!/bin/sh
+
+set -e
+
+IMAGE="${1}"
+THRESHOLD="${2-68}"
+BASE="$(dirname $0)"
+
+convert "${IMAGE}" -resize 96x68 -threshold "${THRESHOLD}"% -coalesce /tmp/r0.png
+convert -size 96x68 xc:white /tmp/r0.png -composite /tmp/r0.png
+${BASE}/img2lcd.pl /tmp/r0.png
+${BASE}/transf /tmp/r0.lcd
