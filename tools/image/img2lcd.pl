@@ -9,7 +9,7 @@ use warnings;
 use Getopt::Long;
 use Module::Load;
 
-$|=1;
+$| = 1;
 
 ###
 ### Runtime Options
@@ -17,62 +17,66 @@ $|=1;
 
 my ($verbose);
 
-GetOptions (
-            "verbose"  => \$verbose, # flag
-			"help"     => sub {
-			print <<HELP;
+GetOptions(
+	"verbose" => \$verbose,    # flag
+	"help"    => sub {
+		print <<HELP;
 Uasge: img2lcd.pl [-v]
 
 Options:
 --verbose         Be verbose.
 HELP
-			exit(-1);}
-			);
-
+		exit(-1);
+	}
+);
 
 ###
 ### Code starts here.
 ###
 
-my $in=shift || "i42.gif";
+my $in = shift || "i42.gif";
 
-my $out=$in;
-$out=~s/\..*/.lcd/;
+my $out = $in;
+$out =~ s/\..*/.lcd/;
 
 load GD;
 my $image = GD::Image->new($in);
 
+my $w = $image->width;
+my $h = $image->height;
 
-my $w=$image->width;
-my $h=$image->height;
+if ( not( $w == 96 and $h == 68 ) ) {
+	warn("Image must be 96x68 pixels, this is ${w}x${h}\n");
+}
 
-if($verbose){
+if ($verbose) {
 	print STDERR "$in: ${w}x$h\n\n";
-};
+}
 
 my @img;
-for my $y (0..$h-1){
-	for my $x (0..$w-1){
-		my $px= $image->getPixel($x,$y);
-        $px=1 if $px>1;
-		$img[$x][($y+4)/8]|=$px<<(7-($y+4)%8);
-		if($verbose){
-			$px=~y/01/ */; print STDERR $px;
-		};
-	};
-	if ($verbose){
+for my $y ( 0 .. $h - 1 ) {
+	for my $x ( 0 .. $w - 1 ) {
+		my $px = $image->getPixel( $x, $y );
+		$px = 1 if $px > 1;
+		$img[$x][ ( $y + 4 ) / 8 ] |= $px << ( 7 - ( $y + 4 ) % 8 );
+		if ($verbose) {
+			$px =~ y/01/ */;
+			print STDERR $px;
+		}
+	}
+	if ($verbose) {
 		print STDERR "<\n";
-	};
-};
+	}
+}
 
-open(F,">",$out)||die "open: $!";
+open( F, ">", $out ) || die "open: $!";
 
-$|=1;
-my $hb=int(($h-1)/8);
-for my $y (0..$hb){
-	for my $x (0..$w-1){
-		printf F "%c",$img[$w-$x-1][$hb-$y];
-	};
-};
+$| = 1;
+my $hb = int( ( $h - 1 ) / 8 );
+for my $y ( 0 .. $hb ) {
+	for my $x ( 0 .. $w - 1 ) {
+		printf F "%c", $img[ $w - $x - 1 ][ $hb - $y ];
+	}
+}
 
 close(F);
